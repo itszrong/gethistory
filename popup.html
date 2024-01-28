@@ -2,16 +2,45 @@
 <html>
   <head>
     <title>Recently Typed URLs</title>
-    <style>
-      body {
-        min-width: 250px;
-      }
-    </style>
+    <meta charset="UTF-8" />
+    <script defer src="popupLogic.js"></script>
+    <link rel="stylesheet" href="popup.css" />
   </head>
 
   <body>
+    <div id="app">
+      <h1>Rabbitto Chrome Extension</h1>
+      <div class="toggle-container">
+        <label class="switch">
+          <input type="checkbox" id="on-off-toggle" />
+          <span class="slider"></span>
+        </label>
+        <!-- <button id="more-btn">More</button> -->
+      </div>
+      <div id="stopwatch">
+        Time since start: <span id="time-display">00:00:00</span>
+      </div>
+      <div id="link-container">
+        <a href="#" id="rabbit-hole-link">See Rabbit Hole</a>
+      </div>
+    </div>
     <h2>Recently Visited Links:</h2>
+    <div class="toggle-container">
+      <label class="switch">
+        <input type="checkbox" id="content-toggle" checked />
+        <span class="slider round"></span>
+      </label>
+    </div>
+
+    <div id="copy-button-container">
+      <!-- Copy button will be dynamically inserted here by JavaScript -->
+    </div>
+
+    <div id="content">
+      <div id="typedUrl_div"></div>
+      <!-- This div will be populated with URLs -->
+    </div>
     <script src="popup.js"></script>
-    <div id="typedUrl_div"></div>
+    <!-- <div id="typedUrl_div"></div> -->
   </body>
 </html>

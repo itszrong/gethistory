@@ -17,7 +17,7 @@
 function onAnchorClick(event) {
   chrome.tabs.create({
     selected: true,
-    url: event.srcElement.href
+    url: event.srcElement.href,
   });
   return false;
 }
@@ -25,69 +25,78 @@ function onAnchorClick(event) {
 // Given an array of URLs, build a DOM list of those URLs in the
 // browser action popup.
 function buildPopupDom(divName, data) {
-
-  let copyButton = document.createElement('button');
-  copyButton.textContent = 'Copy All';
+  let copyButton = document.createElement("button");
+  copyButton.textContent = "Copy All";
 
   let popupDiv = document.getElementById(divName);
-  let ul = document.createElement('ul');
-  copyButton.addEventListener('click', () => copyTextToClipboard(popupDiv));
-  popupDiv.appendChild(copyButton);
+  let copyButtonDiv = document.getElementById("copy-button-container");
+
+  let ul = document.createElement("ul");
+  copyButton.addEventListener("click", () => copyTextToClipboard(popupDiv));
+  //popupDiv.appendChild(copyButton);
+  copyButtonDiv.appendChild(copyButton);
   popupDiv.appendChild(ul);
 
-  data.forEach(item => {
-    let a = document.createElement('a');
+  data.forEach((item) => {
+    let a = document.createElement("a");
     a.href = item.url;
     a.textContent = `url: ${item.url} (Visits: ${item.data.count})`;
-    a.addEventListener('click', onAnchorClick);
+    a.addEventListener("click", onAnchorClick);
 
-    let li = document.createElement('li');
+    let li = document.createElement("li");
     li.appendChild(a);
 
     // Display the first visit time
     if (item.data.visitTimes.length > 0) {
-      let firstVisitTime = document.createElement('span');
-      firstVisitTime.textContent = ` First visit: ${new Date(item.data.visitTimes[0]).toLocaleString()}`;
+      let firstVisitTime = document.createElement("span");
+      firstVisitTime.textContent = ` First visit: ${new Date(
+        item.data.visitTimes[0]
+      ).toLocaleString()}`;
       li.appendChild(firstVisitTime);
     }
 
     // Display the id
-    let ids = document.createElement('span');
+    let ids = document.createElement("span");
     ids.textContent = ` ID: ${item.data.ids}`;
     li.appendChild(ids);
-    
+
     // Display the visitId
     if (item.data.visitIds.length > 0) {
-      let visitIds = document.createElement('div');
-      visitIds.textContent = ` Entering Visit IDs: ${item.data.visitIds.join(',')}`;
+      let visitIds = document.createElement("div");
+      visitIds.textContent = ` Entering Visit IDs: ${item.data.visitIds.join(
+        ","
+      )}`;
       li.appendChild(visitIds);
-        }
+    }
 
     // Display the referringVisitIds
     if (item.data.referringVisitIds.length > 0) {
-      let referringIds = document.createElement('div');
-      referringIds.textContent = ` Referring Visit IDs: ${item.data.referringVisitIds.join(',')}`;
+      let referringIds = document.createElement("div");
+      referringIds.textContent = ` Referring Visit IDs: ${item.data.referringVisitIds.join(
+        ","
+      )}`;
       li.appendChild(referringIds);
     }
 
     ul.appendChild(li);
   });
-
-
 }
 
 // Function to copy text content of a div to clipboard
 function copyTextToClipboard(div) {
-  let textToCopy = '';
-  div.querySelectorAll('li').forEach(li => {
-    textToCopy += li.textContent + '\n';
+  let textToCopy = "";
+  div.querySelectorAll("li").forEach((li) => {
+    textToCopy += li.textContent + "\n";
   });
 
-  navigator.clipboard.writeText(textToCopy).then(() => {
-    console.log('Text copied to clipboard');
-  }).catch(err => {
-    console.error('Failed to copy text: ', err);
-  });
+  navigator.clipboard
+    .writeText(textToCopy)
+    .then(() => {
+      console.log("Text copied to clipboard");
+    })
+    .catch((err) => {
+      console.error("Failed to copy text: ", err);
+    });
 }
 
 // Search history to find up to ten links that a user has typed in,
@@ -107,8 +116,8 @@ function buildTypedUrlList(divName) {
 
   chrome.history.search(
     {
-      text: '', // Return every history item....
-      startTime: oneWeekAgo // that was accessed less than one week ago.
+      text: "", // Return every history item....
+      startTime: oneWeekAgo, // that was accessed less than one week ago.
     },
     function (historyItems) {
       // For each history item, get details on all visits.
@@ -139,22 +148,28 @@ function buildTypedUrlList(divName) {
   const processVisits = function (url, visitItems) {
     for (let i = 0, ie = visitItems.length; i < ie; ++i) {
       if (!urlToCount[url]) {
-        urlToCount[url] = { count: 0, visitTimes: [], referringVisitIds: [] , visitIds: [], ids: []};
+        urlToCount[url] = {
+          count: 0,
+          visitTimes: [],
+          referringVisitIds: [],
+          visitIds: [],
+          ids: [],
+        };
       }
-  
+
       urlToCount[url].count++;
       urlToCount[url].visitTimes.push(visitItems[i].visitTime);
       urlToCount[url].ids.push(visitItems[i].id);
-      urlToCount[url].visitIds.push(visitItems[i].visitId);      
+      urlToCount[url].visitIds.push(visitItems[i].visitId);
       urlToCount[url].referringVisitIds.push(visitItems[i].referringVisitId);
     }
-  
+
     // Final call processing
     if (!--numRequestsOutstanding) {
       onAllVisitsProcessed();
     }
   };
-  
+
   // This function is called when we have the final list of URLs to display.
   const onAllVisitsProcessed = () => {
     // Get the top URLs
@@ -162,13 +177,14 @@ function buildTypedUrlList(divName) {
     for (let url in urlToCount) {
       urlArray.push({ url: url, data: urlToCount[url] });
     }
-  
+
     // Sort, if needed, based on the count or other criteria
     // Example: urlArray.sort((a, b) => b.data.count - a.data.count);
-  
-    buildPopupDom('typedUrl_div', urlArray.slice(0, 10000));
-  };}
 
-document.addEventListener('DOMContentLoaded', function () {
-  buildTypedUrlList('typedUrl_div');
+    buildPopupDom("typedUrl_div", urlArray.slice(0, 10000));
+  };
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  buildTypedUrlList("typedUrl_div");
 });
