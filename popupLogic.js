@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function (result) {
       if (result.isToggleOn && result.stopwatchStartTime) {
         toggle.checked = true;
-        console.log("HEY", result.stopwatchStartTime);
+        //console.log("HEY", result.stopwatchStartTime);
         startStopwatch(result.stopwatchStartTime);
       } else {
         // If no valid data in storage, ensure the toggle is off and reset display
