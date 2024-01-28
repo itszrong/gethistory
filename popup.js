@@ -26,7 +26,7 @@ function onAnchorClick(event) {
 // browser action popup.
 function buildPopupDom(divName, data) {
   let copyButton = document.createElement("button");
-  copyButton.textContent = "Copy All";
+  copyButton.textContent = "Copy links and see rabbit hole";
 
   let popupDiv = document.getElementById(divName);
   let copyButtonDiv = document.getElementById("copy-button-container");

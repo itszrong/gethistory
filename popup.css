@@ -1,5 +1,7 @@
 body {
-  min-width: 250px;
+  width: 500px;
+  overflow-x: auto;
+  padding: 20px;
 }
 
 body,
@@ -8,7 +10,7 @@ html {
 }
 
 #app {
-  padding: 20px;
+  /*padding: 20px; */
   width: 500px;
 }
 
@@ -85,5 +87,22 @@ input:checked + .slider:before {
 }
 
 #content {
-  display: block; /* Default display */
+  display: none; /* Default display */
+  white-space: nowrap;
+  width: 500px;
+  overflow-x: auto;
+}
+
+#view-urls-label {
+  margin-right: 8px; /* Adjust the space between the text and the toggle switch */
+  font-size: 16px; /* Adjust the font size as needed */
+  line-height: 32px; /* Aligns the text vertically with the toggle switch */
+  user-select: none; /* Optional: prevents text from being selectable */
+}
+
+.toggle-container {
+  display: flex; /* Use flexbox for alignment */
+  align-items: center; /* Center items vertically */
+  gap: 8px; /* Adjust the space between items */
+  padding-top: 10px;
 }
