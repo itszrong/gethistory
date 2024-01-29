@@ -1,0 +1,14 @@
+// {
+//   "name": "Get URL History",
+//   "version": "1.3",
+//   "description": "Uses the chrome.history API to display in a popup the user's most visited pages.",
+//   "permissions": ["webNavigation", "tabs", "history"],
+//   "background": {
+//     "service_worker": "background.js"
+//   },
+//   "action": {
+//     "default_popup": "popup.html",
+//     "default_icon": "Rabbitto_logo.png"
+//   },a
+//   "manifest_version": 3
+// }
