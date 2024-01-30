@@ -2,6 +2,7 @@ chrome.webNavigation.onCreatedNavigationTarget.addListener((details) => {
   console.log("onCreatedNavigationTarget event occurred", details); // Debug lo
   let newTabId = details.tabId;
   let sourceTabId = details.sourceTabId;
+  console.log(details);
 
   // Record the creation time of the new tab
   let newTabCreatedTime = Date.now();

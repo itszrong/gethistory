@@ -46,7 +46,7 @@ function onAnchorClick(event) {
 // browser action popup.
 
 function buildPopupDom(divName, processedUrls) {
-  console.log("Processed URLs:", processedUrls);
+  // console.log("Processed URLs:", processedUrls);
   let copyButton = document.createElement("button");
   copyButton.textContent = "Copy links and see rabbit hole";
 
@@ -170,35 +170,55 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Function to get the corrected referringVisitId asynchronously
 function getCorrectedReferringVisitId(visitItem) {
+  console.log("get");
   return new Promise((resolve, reject) => {
     if (visitItem.referringVisitId !== "0") {
       resolve(visitItem.referringVisitId); // No correction needed
     } else {
+      console.log("get2");
       // Get the creation time of the current tab
       chrome.storage.local.get(
         `newTabCreatedTime_${visitItem.id}`,
         function (newTabResult) {
           if (newTabResult[`newTabCreatedTime_${visitItem.id}`]) {
+            console.log("get3");
             // Compare this creation time with the link opening times of all tabs
             chrome.storage.local.get(null, function (allItems) {
+              let foundMatch = false; // Flag to indicate if a match was found
               for (let key in allItems) {
                 if (key.startsWith("linkOpeningTime_")) {
-                  let sourceTabId = key.split("_")[1];
-                  let linkOpeningTime = allItems[key];
+                  let parts = key.split("_");
+                  if (parts.length > 1 && !isNaN(parts[1])) {
+                    let numericPart = parseInt(parts[1], 10); // Convert to integer
+                    console.log(`Original numeric part: ${numericPart}`); // Log original part
 
-                  // If the times are close enough, consider this tab a match
-                  if (
-                    Math.abs(
-                      newTabResult[`newTabCreatedTime_${visitItem.id}`] -
-                        linkOpeningTime
-                    ) <= TIME_THRESHOLD
-                  ) {
-                    resolve(sourceTabId); // Use the source tab ID as the corrected referring visit ID
-                    return;
+                    if (numericPart > 0) {
+                      // Ensure it's greater than 0
+                      let decrementedPart = numericPart - 1; // Subtract 1
+                      console.log(`Decremented part: ${decrementedPart}`); // Log decremented part
+                      let sourceTabId = decrementedPart.toString(); // Convert back to string
+
+                      let linkOpeningTime = allItems[key];
+                      if (
+                        Math.abs(
+                          newTabResult[`newTabCreatedTime_${visitItem.id}`] -
+                            linkOpeningTime
+                        ) <= TIME_THRESHOLD
+                      ) {
+                        resolve(sourceTabId); // Use the decremented ID as the corrected referring visit ID
+                        console.log(
+                          `Resolved with decremented ID: ${sourceTabId}`
+                        );
+                        foundMatch = true;
+                        break; // Exit the loop
+                      }
+                    }
                   }
                 }
               }
-              resolve("0"); // No match found, keep original referringVisitId as "0"
+              if (!foundMatch) {
+                resolve("0"); // No match found, keep original referringVisitId as "0"
+              }
             });
           } else {
             resolve("0"); // No newTabCreatedTime found, keep original referringVisitId as "0"
@@ -255,7 +275,7 @@ function buildTypedUrlList(divName) {
 }
 
 const processVisits = function (url, visitItems) {
-  console.log(`Processing visits for URL: ${url}`); // Debug: Log the URL being processed
+  // console.log(`Processing visits for URL: ${url}`); // Debug: Log the URL being processed
 
   let visitPromises = visitItems.map((visitItem) => {
     return getCorrectedReferringVisitId(visitItem).then(
@@ -268,20 +288,20 @@ const processVisits = function (url, visitItems) {
             visitIds: [],
             ids: [],
           };
-          console.log(`Initialized urlToCount for ${url}`); // Debug: Log initialization
+          // console.log(`Initialized urlToCount for ${url}`); // Debug: Log initialization
         }
         urlToCount[url].count++;
         urlToCount[url].visitTimes.push(visitItem.visitTime);
         urlToCount[url].ids.push(visitItem.id);
         urlToCount[url].visitIds.push(visitItem.visitId);
         urlToCount[url].referringVisitIds.push(correctedReferringVisitId);
-        console.log(`Processed visitItem for ${url}`, visitItem); // Debug: Log each processed visitItem
+        // console.log(`Processed visitItem for ${url}`, visitItem); // Debug: Log each processed visitItem
       }
     );
   });
 
   return Promise.all(visitPromises).then(() => {
-    console.log(`All visits processed for URL: ${url}`, urlToCount[url]); // Debug: Log the processed data
+    // console.log(`All visits processed for URL: ${url}`, urlToCount[url]); // Debug: Log the processed data
     return urlToCount[url]; // Resolve with the processed data for this URL
   });
 };
