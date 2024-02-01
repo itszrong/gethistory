@@ -232,6 +232,8 @@ function getCorrectedReferringVisitId(visitItem) {
 // Search history to find up to ten links that a user has typed in,
 // and show those links in a popup.
 
+let chromeStart;
+
 function buildTypedUrlList(divName) {
   let microsecondsPerWeek = 1000 * 60 * 60 * 24 * 365;
   let oneWeekAgo = new Date().getTime() - microsecondsPerWeek;
@@ -241,7 +243,7 @@ function buildTypedUrlList(divName) {
     ["stopwatchStartTime", "isToggleOn"],
     function (result) {
       let startTime = result.stopwatchStartTime;
-      let chromeStart = startTime ? startTime : new Date();
+      chromeStart = startTime ? startTime : new Date().getTime();
 
       chrome.history.search(
         {
@@ -266,6 +268,7 @@ function buildTypedUrlList(divName) {
             urlProcessPromises.push(promise);
           }
           Promise.all(urlProcessPromises).then((processedUrls) => {
+            console.log(processedUrls);
             buildPopupDom(divName, processedUrls);
           });
         }
@@ -277,28 +280,30 @@ function buildTypedUrlList(divName) {
 const processVisits = function (url, visitItems) {
   // console.log(`Processing visits for URL: ${url}`); // Debug: Log the URL being processed
 
-  let visitPromises = visitItems.map((visitItem) => {
-    return getCorrectedReferringVisitId(visitItem).then(
-      (correctedReferringVisitId) => {
-        if (!urlToCount[url]) {
-          urlToCount[url] = {
-            count: 0,
-            visitTimes: [],
-            referringVisitIds: [],
-            visitIds: [],
-            ids: [],
-          };
-          // console.log(`Initialized urlToCount for ${url}`); // Debug: Log initialization
+  let visitPromises = visitItems
+    .filter((visitItem) => visitItem.visitTime >= chromeStart) // Filter visits by time
+    .map((visitItem) => {
+      return getCorrectedReferringVisitId(visitItem).then(
+        (correctedReferringVisitId) => {
+          if (!urlToCount[url]) {
+            urlToCount[url] = {
+              count: 0,
+              visitTimes: [],
+              referringVisitIds: [],
+              visitIds: [],
+              ids: [],
+            };
+            // console.log(`Initialized urlToCount for ${url}`); // Debug: Log initialization
+          }
+          urlToCount[url].count++;
+          urlToCount[url].visitTimes.push(visitItem.visitTime);
+          urlToCount[url].ids.push(visitItem.id);
+          urlToCount[url].visitIds.push(visitItem.visitId);
+          urlToCount[url].referringVisitIds.push(correctedReferringVisitId);
+          // console.log(`Processed visitItem for ${url}`, visitItem); // Debug: Log each processed visitItem
         }
-        urlToCount[url].count++;
-        urlToCount[url].visitTimes.push(visitItem.visitTime);
-        urlToCount[url].ids.push(visitItem.id);
-        urlToCount[url].visitIds.push(visitItem.visitId);
-        urlToCount[url].referringVisitIds.push(correctedReferringVisitId);
-        // console.log(`Processed visitItem for ${url}`, visitItem); // Debug: Log each processed visitItem
-      }
-    );
-  });
+      );
+    });
 
   return Promise.all(visitPromises).then(() => {
     // console.log(`All visits processed for URL: ${url}`, urlToCount[url]); // Debug: Log the processed data
